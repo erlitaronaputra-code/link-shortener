@@ -96,7 +96,7 @@
 </div>
 
 <script>
-  // Mencegah error skrip luar merusak halaman
+  // Mencegah error dari ekstensi browser pihak ketiga merusak aplikasi
   window.addEventListener('error', function(e) {
     if (e.filename && !e.filename.includes('index.html')) {
       e.stopImmediatePropagation();
@@ -176,6 +176,5 @@
     });
   }
 </script>
-
 </body>
 </html>
