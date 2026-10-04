@@ -1,11 +1,106 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pemendek Link Sederhana</title>
+  <style>
+    * {
+      box-sizing: border-box; /* Mencegah elemen meluap melebihi layar */
+    }
+    html, body {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden; /* Menghilangkan scroll samping secara total */
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 15px;
+    }
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      max-width: 450px;
+      width: 100%;
+      text-align: center;
+    }
+    h2 { margin-bottom: 20px; color: #333; font-size: 1.4rem; }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    button:hover { background-color: #0056b3; }
+    #result {
+      margin-top: 20px;
+      word-wrap: break-word; /* Mencegah link panjang memicu scroll samping */
+      overflow-wrap: break-word;
+      display: none;
+      padding: 12px;
+      background: #e9ecef;
+      border-radius: 6px;
+    }
+    #shortLink {
+      display: block;
+      word-break: break-all; /* Memotong URL panjang dengan rapi */
+      color: #007bff;
+      font-weight: bold;
+      margin: 8px 0;
+    }
+    .copy-btn { background: #28a745; margin-top: 8px; }
+    .copy-btn:hover { background: #218838; }
+    #loading { display: none; margin-top: 15px; color: #555; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h2>Pemendek Link Sederhana</h2>
+  <div id="loading">Mengalihkan ke halaman tujuan...</div>
+
+  <div id="formSection">
+    <input type="url" id="longUrl" placeholder="Masukkan Link Panjang (https://...)" required>
+    <input type="text" id="customCode" placeholder="Kode Kustom (Opsional, misal: rpp)">
+    <button onclick="shortenLink()">Pendekkan Link</button>
+
+    <div id="result">
+      <p style="margin:0; font-size: 14px; color: #555;">Link Pendek Anda:</p>
+      <a id="shortLink" href="#" target="_blank"></a>
+      <button class="copy-btn" onclick="copyLink()">Salin Link</button>
+    </div>
+  </div>
+</div>
+
 <script>
-  // URL Web App Google Apps Script
   const GAS_URL = "https://script.google.com/macros/s/AKfycbzbbk5I4iTforerChZII_EJwQvJmLjohKXo88AidxpSpYmnx7vHuzAll7Usg_F6MZji/exec";
 
   const urlParams = new URLSearchParams(window.location.search);
   const code = urlParams.get('c');
 
-  // 1. Logika Pengalihan (Saat link pendek dibuka)
   if (code) {
     document.getElementById('formSection').style.display = 'none';
     document.getElementById('loading').style.display = 'block';
@@ -23,18 +118,12 @@
     }
   }
 
-  // 2. Logika Generate Link Baru
   function shortenLink() {
     const longUrl = document.getElementById('longUrl').value.trim();
     const customCode = document.getElementById('customCode').value.trim().toLowerCase();
 
     if (!longUrl) {
       alert('Harap masukkan URL panjang!');
-      return;
-    }
-
-    if (longUrl.includes('script.google.com')) {
-      alert('Error: Tidak bisa memendekkan URL Google Apps Script!');
       return;
     }
 
@@ -47,12 +136,23 @@
       const finalCode = customCode || Math.random().toString(36).substring(2, 7);
       const shortUrl = window.location.origin + window.location.pathname + '?c=' + finalCode;
 
-      document.getElementById('shortLink').href = shortUrl;
-      document.getElementById('shortLink').innerText = shortUrl;
+      const linkElem = document.getElementById('shortLink');
+      linkElem.href = shortUrl;
+      linkElem.innerText = shortUrl;
       document.getElementById('result').style.display = 'block';
       alert('Link berhasil dibuat!');
     }).catch(err => {
       alert('Gagal menyimpan link: ' + err);
     });
   }
+
+  function copyLink() {
+    const shortUrl = document.getElementById('shortLink').href;
+    navigator.clipboard.writeText(shortUrl).then(() => {
+      alert('Link berhasil disalin!');
+    });
+  }
 </script>
+
+</body>
+</html>
