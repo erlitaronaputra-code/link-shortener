@@ -1,16 +1,15 @@
 <script>
-  // URL Web App Google Apps Script Anda yang valid
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbzbbk5I4iTforerChZII_EJwQvJmLjohKXo88AidxpSpYmnx7vHuzAll7Usg_F6MZji/exec"; 
+  // URL Web App Google Apps Script
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbzbbk5I4iTforerChZII_EJwQvJmLjohKXo88AidxpSpYmnx7vHuzAll7Usg_F6MZji/exec";
 
   const urlParams = new URLSearchParams(window.location.search);
   const code = urlParams.get('c');
 
-  // 1. LOGIKA PENGALIHAN (Ketika link pendek dibuka)
+  // 1. Logika Pengalihan (Saat link pendek dibuka)
   if (code) {
     document.getElementById('formSection').style.display = 'none';
     document.getElementById('loading').style.display = 'block';
 
-    // Memanggil Apps Script menggunakan JSONP
     const script = document.createElement('script');
     script.src = `${GAS_URL}?c=${encodeURIComponent(code)}&callback=handleRedirect`;
     document.body.appendChild(script);
@@ -24,7 +23,7 @@
     }
   }
 
-  // 2. LOGIKA GENERATE LINK BARU
+  // 2. Logika Generate Link Baru
   function shortenLink() {
     const longUrl = document.getElementById('longUrl').value.trim();
     const customCode = document.getElementById('customCode').value.trim().toLowerCase();
@@ -39,7 +38,6 @@
       return;
     }
 
-    // Kirim data ke Apps Script
     fetch(GAS_URL, {
       method: 'POST',
       mode: 'no-cors',
