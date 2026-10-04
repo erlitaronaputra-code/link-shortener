@@ -139,7 +139,6 @@ function shortenLink() {
       return;
     }
 
-    // Mengirim data langsung ke Apps Script tanpa memblokir jenis link apapun
     const formData = new URLSearchParams();
     formData.append('url', longUrl);
     formData.append('customCode', customCode);
