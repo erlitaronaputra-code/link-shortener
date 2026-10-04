@@ -80,6 +80,9 @@
       background-color: #34a853;
       margin-top: 5px;
     }
+    .copy-btn:hover {
+      background-color: #2d8e47;
+    }
     .footer {
       text-align: center;
       margin-top: 25px;
@@ -102,7 +105,7 @@
       <h3 id="status-text">Mengalihkan ke halaman tujuan...</h3>
     </div>
 
-    <!-- Tampilan Formulir jika dibuka langsung tanpa kode -->
+    <!-- Tampilan Formulir Utama -->
     <div id="form-container">
       <h2>URL Shortener</h2>
 
@@ -129,6 +132,7 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzrrFgSzqBAYpmB6tdXKA67iIsH9w6PrZ_xZCrUYmoaMWFTwcl5GGuhD8Vrs2Zbn4g8Tw/exec";
 
+    // Callback JSONP untuk Pengalihan Link
     window.handleRedirect = function(data) {
       if (data && data.success && data.targetUrl) {
         window.location.href = data.targetUrl;
@@ -151,6 +155,43 @@
         document.body.appendChild(script);
       }
     };
+
+    // Fungsi untuk Memproses Pemendekan Link
+    function prosesShorten() {
+      let url = document.getElementById("url").value;
+      let customCode = document.getElementById("custom-code").value;
+      let btn = document.getElementById("btn-submit");
+
+      if (!url.trim()) {
+        alert("Harap masukkan URL yang ingin dipendekkan!");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = "Memproses...";
+
+      fetch(API_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: url, customCode: customCode })
+      })
+      .then(() => {
+        btn.disabled = false;
+        btn.innerText = "Pendekkan Link";
+
+        const codeOut = customCode.trim() ? customCode.trim().toLowerCase() : "auto";
+        const finalLink = `https://erlitaronaputra-code.github.io/link-shortener/?c=${codeOut}`;
+
+        document.getElementById("short-url-out").value = finalLink;
+        document.getElementById("result").style.display = "block";
+      })
+      .catch(err => {
+        btn.disabled = false;
+        btn.innerText = "Pendekkan Link";
+        alert("Gagal memproses link: " + err.message);
+      });
+    }
 
     function salinLink() {
       let copyText = document.getElementById("short-url-out");
