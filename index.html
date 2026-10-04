@@ -130,7 +130,7 @@
     }
   }
 
-  function shortenLink() {
+function shortenLink() {
     const longUrl = document.getElementById('longUrl').value.trim();
     const customCode = document.getElementById('customCode').value.trim().toLowerCase();
 
@@ -139,11 +139,7 @@
       return;
     }
 
-    if (longUrl.includes('script.google.com')) {
-      alert('Error: Tidak bisa memendekkan URL Google Apps Script!');
-      return;
-    }
-
+    // Mengirim data langsung ke Apps Script tanpa memblokir jenis link apapun
     const formData = new URLSearchParams();
     formData.append('url', longUrl);
     formData.append('customCode', customCode);
@@ -166,13 +162,6 @@
       alert('Link berhasil dibuat dan tersimpan di Spreadsheet!');
     }).catch(err => {
       alert('Gagal menyimpan link: ' + err);
-    });
-  }
-
-  function copyLink() {
-    const shortUrl = document.getElementById('shortLink').href;
-    navigator.clipboard.writeText(shortUrl).then(() => {
-      alert('Link berhasil disalin!');
     });
   }
 </script>
