@@ -1,136 +1,60 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pemendek Link Sederhana</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f6f9;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-    }
-    .card {
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      max-width: 450px;
-      width: 100%;
-      text-align: center;
-    }
-    h2 { margin-bottom: 20px; color: #333; }
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      box-sizing: border-box;
-    }
-    button {
-      width: 100%;
-      padding: 12px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 16px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-    button:hover { background-color: #0056b3; }
-    #result {
-      margin-top: 20px;
-      word-break: break-all;
-      display: none;
-      padding: 10px;
-      background: #e9ecef;
-      border-radius: 6px;
-    }
-    .copy-btn {
-      background: #28a745;
-      margin-top: 8px;
-    }
-    .copy-btn:hover { background: #218838; }
-    #loading { display: none; margin-top: 15px; color: #555; }
-  </style>
-</head>
-<body>
-
-<div class="card" id="appCard">
-  <h2 id="title">Pemendek Link Sederhana</h2>
-  <div id="loading">Mengalihkan ke halaman tujuan...</div>
-
-  <div id="formSection">
-    <input type="url" id="longUrl" placeholder="Masukkan Link Panjang (https://...)" required>
-    <input type="text" id="customCode" placeholder="Kode Kustom (Opsional, misal: rpp)">
-    <button onclick="shortenLink()">Pendekkan Link</button>
-
-    <div id="result">
-      <p>Link Pendek Anda:</p>
-      <a id="shortLink" href="#" target="_blank"></a>
-      <button class="copy-btn" onclick="copyLink()">Salin Link</button>
-    </div>
-  </div>
-</div>
-
 <script>
-  // 1. Logika Pengalihan Otomatis saat link dipanggil (?c=kode)
+  // Ganti dengan URL Web App Apps Script terbaru Anda dari Langkah 1
+  const GAS_URL = "https://script.google.com/macros/s/AKfy.../exec"; 
+
   const urlParams = new URLSearchParams(window.location.search);
   const code = urlParams.get('c');
 
+  // 1. LOGIKA PENGALIHAN (Ketika link pendek dibuka)
   if (code) {
     document.getElementById('formSection').style.display = 'none';
     document.getElementById('loading').style.display = 'block';
 
-    // Ambil data database dari urls.json di GitHub
-    fetch('urls.json')
-      .then(response => response.json())
-      .then(data => {
-        const cleanCode = code.trim().toLowerCase();
-        if (data[cleanCode]) {
-          window.location.href = data[cleanCode];
-        } else {
-          document.getElementById('loading').innerText = 'Kode link tidak ditemukan!';
-        }
-      })
-      .catch(err => {
-        document.getElementById('loading').innerText = 'Gagal memuat database link.';
-      });
+    // Memanggil Apps Script menggunakan JSONP untuk menghindari masalah CORS
+    const script = document.createElement('script');
+    script.src = `${GAS_URL}?c=${encodeURIComponent(code)}&callback=handleRedirect`;
+    document.body.appendChild(script);
   }
 
-  // 2. Logika Pembuatan Link Pendek di Tampilan Web
+  function handleRedirect(response) {
+    if (response && response.success && response.targetUrl) {
+      window.location.href = response.targetUrl;
+    } else {
+      document.getElementById('loading').innerText = response.message || 'Kode link tidak ditemukan!';
+    }
+  }
+
+  // 2. LOGIKA GENERATE LINK BARU (Simpan Otomatis ke Spreadsheet)
   function shortenLink() {
     const longUrl = document.getElementById('longUrl').value.trim();
     const customCode = document.getElementById('customCode').value.trim().toLowerCase();
 
     if (!longUrl) {
-      alert('Harap masukkan URL panjang terlebih dahulu!');
+      alert('Harap masukkan URL panjang!');
       return;
     }
 
-    const finalCode = customCode || Math.random().toString(36).substring(2, 7);
-    const shortUrl = window.location.origin + window.location.pathname + '?c=' + finalCode;
+    if (longUrl.includes('script.google.com')) {
+      alert('Error: Tidak bisa memendekkan URL Google Apps Script!');
+      return;
+    }
 
-    const shortLinkElem = document.getElementById('shortLink');
-    shortLinkElem.href = shortUrl;
-    shortLinkElem.innerText = shortUrl;
+    // Kirim data ke Apps Script
+    fetch(GAS_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: longUrl, customCode: customCode })
+    }).then(() => {
+      const finalCode = customCode || 'otostore';
+      const shortUrl = window.location.origin + window.location.pathname + '?c=' + finalCode;
 
-    document.getElementById('result').style.display = 'block';
-  }
-
-  function copyLink() {
-    const shortUrl = document.getElementById('shortLink').href;
-    navigator.clipboard.writeText(shortUrl).then(() => {
-      alert('Link berhasil disalin!');
+      document.getElementById('shortLink').href = shortUrl;
+      document.getElementById('shortLink').innerText = shortUrl;
+      document.getElementById('result').style.display = 'block';
+      alert('Link berhasil dibuat dan tersimpan ke Database!');
+    }).catch(err => {
+      alert('Gagal menyimpan link: ' + err);
     });
   }
 </script>
-
-</body>
-</html>
