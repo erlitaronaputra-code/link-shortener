@@ -8,197 +8,129 @@
     body {
       font-family: Arial, sans-serif;
       background-color: #f4f6f9;
-      color: #333;
-      padding: 20px;
-      margin: 0;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      box-sizing: border-box;
+      margin: 0;
     }
     .card {
       background: white;
-      width: 100%;
-      max-width: 480px;
-      padding: 25px;
+      padding: 30px;
       border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    h2 {
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      max-width: 450px;
+      width: 100%;
       text-align: center;
-      margin-top: 0;
-      color: #1a73e8;
     }
-    label {
-      font-size: 13px;
-      font-weight: bold;
-      display: block;
-      margin-top: 12px;
-      margin-bottom: 5px;
-    }
+    h2 { margin-bottom: 20px; color: #333; }
     input {
       width: 100%;
-      padding: 11px;
+      padding: 10px;
+      margin: 8px 0;
       border: 1px solid #ccc;
       border-radius: 6px;
-      font-size: 14px;
       box-sizing: border-box;
     }
     button {
+      width: 100%;
       padding: 12px;
-      background-color: #1a73e8;
+      background-color: #007bff;
       color: white;
       border: none;
       border-radius: 6px;
+      font-size: 16px;
       cursor: pointer;
-      font-weight: bold;
-      width: 100%;
-      font-size: 15px;
-      margin-top: 18px;
+      margin-top: 10px;
     }
-    button:hover {
-      background-color: #1557b0;
-    }
-    .result-box {
-      display: none;
+    button:hover { background-color: #0056b3; }
+    #result {
       margin-top: 20px;
-      padding: 15px;
-      background: #e8f0fe;
-      border-radius: 8px;
-      border: 1px solid #aecbfa;
-      text-align: center;
-    }
-    .result-box input {
-      background: #fff;
-      text-align: center;
-      font-weight: bold;
-      color: #185abc;
-      margin-bottom: 10px;
+      word-break: break-all;
+      display: none;
+      padding: 10px;
+      background: #e9ecef;
+      border-radius: 6px;
     }
     .copy-btn {
-      background-color: #34a853;
-      margin-top: 5px;
+      background: #28a745;
+      margin-top: 8px;
     }
-    .copy-btn:hover {
-      background-color: #2d8e47;
-    }
-    .footer {
-      text-align: center;
-      margin-top: 25px;
-      font-size: 12px;
-      color: #777;
-      border-top: 1px solid #eee;
-      padding-top: 15px;
-    }
-    #redirect-status {
-      display: none;
-      text-align: center;
-    }
+    .copy-btn:hover { background: #218838; }
+    #loading { display: none; margin-top: 15px; color: #555; }
   </style>
 </head>
 <body>
 
-  <div class="card">
-    <!-- Status jika pengunjung menggunakan kode ?c=... -->
-    <div id="redirect-status">
-      <h3 id="status-text">Mengalihkan ke halaman tujuan...</h3>
-    </div>
+<div class="card" id="appCard">
+  <h2 id="title">Pemendek Link Sederhana</h2>
+  <div id="loading">Mengalihkan ke halaman tujuan...</div>
 
-    <!-- Tampilan Formulir Utama -->
-    <div id="form-container">
-      <h2>URL Shortener</h2>
+  <div id="formSection">
+    <input type="url" id="longUrl" placeholder="Masukkan Link Panjang (https://...)" required>
+    <input type="text" id="customCode" placeholder="Kode Kustom (Opsional, misal: rpp)">
+    <button onclick="shortenLink()">Pendekkan Link</button>
 
-      <label for="url">Masukkan Link Panjang:</label>
-      <input type="text" id="url" placeholder="https://contoh.com/halaman-panjang...">
-
-      <label for="custom-code">Kode Kustom (Opsional):</label>
-      <input type="text" id="custom-code" placeholder="Contoh: modul-ajar">
-
-      <button id="btn-submit" onclick="prosesShorten()">Pendekkan Link</button>
-
-      <div id="result" class="result-box">
-        <label>Link Pendek Anda:</label>
-        <input type="text" id="short-url-out" readonly>
-        <button class="copy-btn" onclick="salinLink()">Salin Link</button>
-      </div>
-
-      <div class="footer">
-        &copy; 2026 Tarona Putra, S.Pd.I. All rights reserved.
-      </div>
+    <div id="result">
+      <p>Link Pendek Anda:</p>
+      <a id="shortLink" href="#" target="_blank"></a>
+      <button class="copy-btn" onclick="copyLink()">Salin Link</button>
     </div>
   </div>
+</div>
 
-  <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbzrrFgSzqBAYpmB6tdXKA67iIsH9w6PrZ_xZCrUYmoaMWFTwcl5GGuhD8Vrs2Zbn4g8Tw/exec";
+<script>
+  // 1. Logika Pengalihan Otomatis saat link dipanggil (?c=kode)
+  const urlParams = new URLSearchParams(window.location.search);
+  const code = urlParams.get('c');
 
-    // Callback JSONP untuk Pengalihan Link
-    window.handleRedirect = function(data) {
-      if (data && data.success && data.targetUrl) {
-        window.location.href = data.targetUrl;
-      } else {
-        document.getElementById('status-text').innerText = "Link tidak ditemukan!";
-        document.getElementById('status-text').style.color = "red";
-      }
-    };
+  if (code) {
+    document.getElementById('formSection').style.display = 'none';
+    document.getElementById('loading').style.display = 'block';
 
-    window.onload = function() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const code = urlParams.get('c');
-
-      if (code) {
-        document.getElementById('form-container').style.display = 'none';
-        document.getElementById('redirect-status').style.display = 'block';
-
-        const script = document.createElement('script');
-        script.src = `${API_URL}?c=${encodeURIComponent(code)}&callback=handleRedirect`;
-        document.body.appendChild(script);
-      }
-    };
-
-    // Fungsi untuk Memproses Pemendekan Link
-    function prosesShorten() {
-      let url = document.getElementById("url").value;
-      let customCode = document.getElementById("custom-code").value;
-      let btn = document.getElementById("btn-submit");
-
-      if (!url.trim()) {
-        alert("Harap masukkan URL yang ingin dipendekkan!");
-        return;
-      }
-
-      btn.disabled = true;
-      btn.innerText = "Memproses...";
-
-      fetch(API_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: url, customCode: customCode })
-      })
-      .then(() => {
-        btn.disabled = false;
-        btn.innerText = "Pendekkan Link";
-
-        const codeOut = customCode.trim() ? customCode.trim().toLowerCase() : "auto";
-        const finalLink = `https://erlitaronaputra-code.github.io/link-shortener/?c=${codeOut}`;
-
-        document.getElementById("short-url-out").value = finalLink;
-        document.getElementById("result").style.display = "block";
+    // Ambil data database dari urls.json di GitHub
+    fetch('urls.json')
+      .then(response => response.json())
+      .then(data => {
+        const cleanCode = code.trim().toLowerCase();
+        if (data[cleanCode]) {
+          window.location.href = data[cleanCode];
+        } else {
+          document.getElementById('loading').innerText = 'Kode link tidak ditemukan!';
+        }
       })
       .catch(err => {
-        btn.disabled = false;
-        btn.innerText = "Pendekkan Link";
-        alert("Gagal memproses link: " + err.message);
+        document.getElementById('loading').innerText = 'Gagal memuat database link.';
       });
+  }
+
+  // 2. Logika Pembuatan Link Pendek di Tampilan Web
+  function shortenLink() {
+    const longUrl = document.getElementById('longUrl').value.trim();
+    const customCode = document.getElementById('customCode').value.trim().toLowerCase();
+
+    if (!longUrl) {
+      alert('Harap masukkan URL panjang terlebih dahulu!');
+      return;
     }
 
-    function salinLink() {
-      let copyText = document.getElementById("short-url-out");
-      copyText.select();
-      navigator.clipboard.writeText(copyText.value);
-      alert("Link pendek berhasil disalin!");
-    }
-  </script>
+    const finalCode = customCode || Math.random().toString(36).substring(2, 7);
+    const shortUrl = window.location.origin + window.location.pathname + '?c=' + finalCode;
+
+    const shortLinkElem = document.getElementById('shortLink');
+    shortLinkElem.href = shortUrl;
+    shortLinkElem.innerText = shortUrl;
+
+    document.getElementById('result').style.display = 'block';
+  }
+
+  function copyLink() {
+    const shortUrl = document.getElementById('shortLink').href;
+    navigator.clipboard.writeText(shortUrl).then(() => {
+      alert('Link berhasil disalin!');
+    });
+  }
+</script>
+
 </body>
 </html>
