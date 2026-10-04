@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>URL Shortener Redirect</title>
+  <style>
+    body { 
+      font-family: sans-serif; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      height: 100vh; 
+      margin: 0; 
+      background: #f4f6f9; 
+    }
+    .card { 
+      background: white; 
+      padding: 30px; 
+      border-radius: 10px; 
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+      text-align: center; 
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h3 id="status">Mengalihkan ke halaman tujuan...</h3>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzrrFgSzqBAYpmB6tdXKA67iIsH9w6PrZ_xZCrUYmoaMWFTwcl5GGuhD8Vrs2Zbn4g8Tw/exec";
+
+    window.onload = function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('c');
+
+      if (code) {
+        fetch(`${API_URL}?action=get&c=${encodeURIComponent(code)}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.success && data.targetUrl) {
+              window.location.href = data.targetUrl;
+            } else {
+              document.getElementById('status').innerText = "Link tidak ditemukan di Spreadsheet.";
+            }
+          })
+          .catch(() => {
+            document.getElementById('status').innerText = "Gagal terhubung ke database.";
+          });
+      } else {
+        document.getElementById('status').innerText = "Short Link Generator Siap Digunakan.";
+      }
+    };
+  </script>
+</body>
+</html>
