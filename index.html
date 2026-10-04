@@ -1,5 +1,5 @@
 <script>
-  // Masukkan URL Web App Google Apps Script Anda di dalam tanda petik
+  // URL Web App Google Apps Script Anda yang valid
   const GAS_URL = "https://script.google.com/macros/s/AKfycbzbbk5I4iTforerChZII_EJwQvJmLjohKXo88AidxpSpYmnx7vHuzAll7Usg_F6MZji/exec"; 
 
   const urlParams = new URLSearchParams(window.location.search);
@@ -10,7 +10,7 @@
     document.getElementById('formSection').style.display = 'none';
     document.getElementById('loading').style.display = 'block';
 
-    // Memanggil Apps Script menggunakan JSONP untuk menghindari masalah CORS
+    // Memanggil Apps Script menggunakan JSONP
     const script = document.createElement('script');
     script.src = `${GAS_URL}?c=${encodeURIComponent(code)}&callback=handleRedirect`;
     document.body.appendChild(script);
@@ -24,7 +24,7 @@
     }
   }
 
-  // 2. LOGIKA GENERATE LINK BARU (Simpan Otomatis ke Spreadsheet)
+  // 2. LOGIKA GENERATE LINK BARU
   function shortenLink() {
     const longUrl = document.getElementById('longUrl').value.trim();
     const customCode = document.getElementById('customCode').value.trim().toLowerCase();
@@ -52,7 +52,7 @@
       document.getElementById('shortLink').href = shortUrl;
       document.getElementById('shortLink').innerText = shortUrl;
       document.getElementById('result').style.display = 'block';
-      alert('Link berhasil dibuat dan tersimpan ke Database!');
+      alert('Link berhasil dibuat!');
     }).catch(err => {
       alert('Gagal menyimpan link: ' + err);
     });
